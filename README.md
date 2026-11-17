@@ -15,6 +15,16 @@ La página reconoce sola las columnas del Excel (Referencia, Descripción, Marca
 
 En los catálogos que se descargan para clientes el botón Alex no aparece.
 
+## Catálogo para clientes: link + pedido por WhatsApp
+
+1. En el dashboard, filtra la marca (y lo que quieras) y toca **📋 Catálogo**.
+2. Escribe tu nombre y tu WhatsApp (quedan guardados) y, si quieres, el nombre del cliente.
+3. Toca **Copiar link para cliente** o **Enviar por WhatsApp**.
+   - El link abre solo esos productos, con tus condiciones de precio, sin botones internos y siempre con el inventario más reciente.
+4. El cliente arma su pedido y toca **📲 Enviar pedido por WhatsApp**: te llega el pedido con referencias, cantidades y total, más un link que abre la orden con fotos (desde ahí bajas el XLSX).
+
+Sigue existiendo **Descargar HTML** (archivo con el stock del día); ese archivo también trae el botón de WhatsApp.
+
 ## Fotos
 
 - Salen del servidor de TopManage: `pic.aspx`, con `ID=4` para Multimoda y `ID=5` para Prestige.

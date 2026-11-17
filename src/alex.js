@@ -23,8 +23,8 @@
   // ---------- estilos ----------
   var css = document.createElement('style'); css.id = 'alex-css';
   css.textContent = [
-    '#alex-btn{position:fixed;left:14px;bottom:14px;z-index:96;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:9px 16px;font:700 13px var(--font);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}',
-    '#alex-btn:hover{border-color:var(--accent);color:var(--accent)}',
+    '#alex-btn{position:fixed;left:16px;bottom:16px;z-index:190;background:#facc15;color:#111827;border:2px solid #eab308;border-radius:999px;padding:11px 20px;font:800 14px var(--font);cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5)}',
+    '#alex-btn:hover{background:#fde047}',
     '#alex-modal .modal{max-width:760px}',
     '#alex-modal h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:18px 0 8px}',
     '#alex-drop{border:2px dashed var(--border);border-radius:12px;padding:26px;text-align:center;cursor:pointer;color:var(--muted);font-size:14px}',
@@ -51,7 +51,7 @@
   document.head.appendChild(css);
 
   var btn = document.createElement('button');
-  btn.id = 'alex-btn'; btn.textContent = 'Alex'; btn.title = 'Actualizar inventario (Excel de EBS)';
+  btn.id = 'alex-btn'; btn.textContent = '⬆ Alex'; btn.title = 'Actualizar inventario (Excel de EBS)';
   btn.onclick = askPassword;
   document.body.appendChild(btn);
 
