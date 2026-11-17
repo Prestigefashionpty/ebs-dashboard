@@ -9,6 +9,14 @@
   var SITE_FALLBACK = 'https://prestigefashionpty.github.io/ebs-dashboard/';
   var SALT = 'attie-ebs-v1';
   var MAX_LINES = 40;
+  // Vendedores fijos (se elige de la lista; siempre se puede escribir otro)
+  var VENDEDORES = [
+    ['Damian', '+507 6151-3524'],
+    ['Carlos Celis', '+507 6550-6151'],
+    ['Silvia Batres', '+507 6616-8751'],
+    ['Milagros Valdes', '+507 6402-1532'],
+    ['Dora Baxter', '+507 6256-3778']
+  ];
   var isHttp = /^https?:$/.test(location.protocol);
   var SITE = isHttp ? location.origin + location.pathname : SITE_FALLBACK;
 
@@ -86,9 +94,12 @@
     box.className = 'cl-internal';
     box.innerHTML =
       '<div style="font-size:13px;font-weight:700;margin:4px 0 10px">🔗 Link para el cliente <span style="font-weight:400;color:var(--muted)">(siempre con el stock del día)</span></div>' +
+      '<div class="cl-field" style="margin-bottom:10px"><label>Vendedor</label><select id="cl-sel">' +
+        VENDEDORES.map(function(x, i){ return '<option value="' + i + '">' + escT(x[0]) + ' · ' + escT(x[1]) + '</option>'; }).join('') +
+        '<option value="otro">Otro (escribir)…</option></select></div>' +
       '<div class="cl-grid">' +
-        '<div class="cl-field"><label>Vendedor</label><input id="cl-vn" placeholder="Tu nombre" value="' + escA(v.nombre || '') + '"></div>' +
-        '<div class="cl-field"><label>WhatsApp del vendedor</label><input id="cl-vt" inputmode="tel" placeholder="6000-0000 o +507..." value="' + escA(v.tel || '') + '"></div>' +
+        '<div class="cl-field"><label>Nombre</label><input id="cl-vn" placeholder="Nombre del vendedor"></div>' +
+        '<div class="cl-field"><label>WhatsApp</label><input id="cl-vt" inputmode="tel" placeholder="6000-0000 o +507..."></div>' +
       '</div>' +
       '<div class="cl-field" style="margin-bottom:12px"><label>Cliente (opcional)</label><input id="cl-cl" placeholder="Ej: SIMAN"></div>' +
       '<div style="display:flex;gap:8px"><button class="btn btn-primary" style="flex:2;padding:10px" id="cl-copy">🔗 Copiar link para cliente</button>' +
@@ -99,6 +110,16 @@
     var dl = body.querySelector('button[onclick="downloadCatalog()"]');
     body.insertBefore(box, dl);
     if(dl){ dl.classList.remove('btn-primary'); dl.style.background = 'var(--surface2)'; dl.style.color = 'var(--text)'; dl.style.border = '1px solid var(--border)'; dl.style.padding = '10px'; }
+    var sel = $('cl-sel');
+    function aplicar(){
+      if(sel.value === 'otro'){ $('cl-vn').value = ''; $('cl-vt').value = ''; $('cl-vn').focus(); return; }
+      var x = VENDEDORES[+sel.value]; $('cl-vn').value = x[0]; $('cl-vt').value = x[1];
+    }
+    var idx = VENDEDORES.findIndex(function(x){ return x[0] === v.nombre; });
+    if(idx >= 0){ sel.value = String(idx); aplicar(); }
+    else if(v.nombre){ sel.value = 'otro'; $('cl-vn').value = v.nombre; $('cl-vt').value = v.tel || ''; }
+    else { sel.value = '0'; aplicar(); }
+    sel.onchange = aplicar;
     $('cl-copy').onclick = function(){ makeLink(false); };
     $('cl-share').onclick = function(){ makeLink(true); };
   }

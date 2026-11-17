@@ -57,18 +57,19 @@
 
   // ---------- columnas ----------
   var FIELDS = [
-    ['ref',    'Referencia',  1, ['referencia','ref','codigo','codigoarticulo','codarticulo','articulo','itemcode','item','estilo','style','sku','codigosku']],
-    ['desc',   'Descripción', 0, ['descripcion','desc','producto','nombre','descripcionarticulo','itemname','description','nombrearticulo']],
-    ['marca',  'Marca',       1, ['marca','brand','marcas','nombremarca']],
+    ['ref',    'Referencia',  1, ['referencia','producto','product','ref','codigo','codigoarticulo','codarticulo','articulo','itemcode','item','estilo','style','sku','codigosku']],
+    ['desc',   'Descripción', 0, ['descripcion','desc','nombre','descripcionarticulo','itemname','description','nombrearticulo']],
+    ['marca',  'Marca',       0, ['marca','brand','marcas','nombremarca']],
     ['cia',    'CIA',         0, ['cia','compania','empresa','sociedad','company','cias']],
-    ['disp',   'Disponible',  1, ['disponible','disp','stock','existencia','existencias','cantidad','qty','inventario','unidades','onhand','cantidaddisponible','stockdisponible']],
-    ['precio', 'Precio',      1, ['precioventa','precio','pvp','preciowholesale','wholesale','price','preciomayoreo','preciodeventa']],
+    ['disp',   'Disponible',  1, ['disponible','available','disp','stock','existencia','existencias','cantidad','qty','inventario','unidades','onhand','cantidaddisponible','stockdisponible']],
+    ['precio', 'Precio',      0, ['precioventa','precio','pvp','preciowholesale','wholesale','price','preciomayoreo','preciodeventa']],
     ['grupo',  'Grupo',       0, ['grupo','categoria','category','grupoarticulo','subcategoria','linea','grupodearticulo']],
     ['year',   'Año',         0, ['ano','year','anio','anotemporada','aniotemporada','atemp','yeartemporada']],
     ['temp',   'Temporada',   0, ['temporada','temporado','temp','season']],
     ['color',  'Color',       0, ['color','colour','colores','color1','nombrecolor']],
     ['estado', 'Estado',      0, ['estado','status','estatus','situacion','condicion']],
     ['foto',   'Foto',        0, ['foto','fotos','imagen','image','url','link','picture','pic','urlfoto','filename','archivofoto','rutafoto']],
+    ['bodega', 'Bodega',      0, ['bodega','warehouse','almacen','deposito']],
     ['gerente','Gerente',     0, ['gerente','manager','gerentedivision','gerentemarca']],
     ['sku',    '# (número)',  0, ['#','no','num','numero','id','idarticulo','skuid','codigointerno','correlativo']]
   ];
@@ -131,27 +132,61 @@
     return PIC + '?ID=' + (cia === 'MM' ? 4 : 5) + '&Original=Y&filename=' + s;
   }
 
-  function buildProducts(rows, hdr, map){
-    var out = [], byRef = {}, dup = 0;
+  // Precio y datos que el Excel del EBS no trae: se toman de lo publicado hoy (vienen de SAP).
+  function actuales(){
+    var m = {};
+    PRODUCTS.forEach(function(p){ m[p.ref] = p; });
+    return m;
+  }
+  function buildProducts(rows, hdr, map, ciaArchivo){
+    var out = [], byRef = {}, dup = 0, sinPrecio = 0, fueraBodega = 0;
+    var prev = actuales();
     for(var r = hdr + 1; r < rows.length; r++){
       var row = rows[r]; if(!row) continue;
       var g = function(f){ return map[f] === undefined ? '' : row[map[f]]; };
       var ref = str(g('ref'));
       if(!ref) continue;
-      var cia = normCia(g('cia'));
+      if(map.bodega !== undefined && norm(g('bodega')) !== 'regular'){ fueraBodega++; continue; }
+      var cia = map.cia !== undefined ? normCia(g('cia')) : ciaArchivo;
       if(byRef[ref]){ byRef[ref].disp += num(g('disp')); dup++; continue; }
+      var p0 = prev[ref] || {};
+      var precio = Math.round(num(g('precio')) * 100) / 100;
+      if(!(precio > 0)) precio = Math.round(num(p0.precio0 != null ? p0.precio0 : p0.precio) * 100) / 100;
       var p = {
-        marca: str(g('marca')), gerente: str(g('gerente')), cia: cia, ref: ref,
-        disp: num(g('disp')), desc: str(g('desc')), year: normYear(g('year')),
-        temp: str(g('temp')).toUpperCase(), precio: Math.round(num(g('precio')) * 100) / 100,
-        grupo: str(g('grupo')), url: fotoUrl(g('foto'), cia), color: str(g('color')),
-        estado: normEstado(g('estado')), ord: out.length,
+        marca: str(g('marca')) || p0.marca || '', gerente: str(g('gerente')), cia: cia, ref: ref,
+        disp: num(g('disp')), desc: str(g('desc')) || p0.desc || '', year: normYear(g('year')) || p0.year || '',
+        temp: (str(g('temp')) || p0.temp || '').toUpperCase(), precio: precio,
+        grupo: p0.grupo || str(g('grupo')), url: fotoUrl(g('foto'), cia) || p0.url || '', color: str(g('color')) || p0.color || '',
+        estado: map.estado !== undefined ? normEstado(g('estado')) : 'DISPONIBLE', ord: 0,
         sku: map.sku !== undefined && num(g('sku')) ? num(g('sku')) : r - hdr
       };
       byRef[ref] = p; out.push(p);
     }
-    out.forEach(function(p){ p.disp = Math.round(p.disp); });
-    return { products: out, dup: dup };
+    out.forEach(function(p){ p.disp = Math.round(p.disp); if(map.estado === undefined) p.estado = p.disp > 0 ? 'DISPONIBLE' : 'EN CAMINO'; });
+    var nuevos = out.filter(function(p){
+      if(!(p.precio > 0)){ sinPrecio++; return false; }
+      return p.disp > 0 || p.estado === 'EN CAMINO';
+    });
+    // Si el archivo es de una sola compañía (Excel del EBS), se conserva lo de la otra
+    // compañía y lo que estaba EN CAMINO de esta y no viene en el archivo.
+    var mantener = [];
+    if(map.cia === undefined){
+      var esta = {}; nuevos.forEach(function(p){ esta[p.ref] = 1; });
+      mantener = PRODUCTS.filter(function(p){
+        return p.cia !== ciaArchivo || (p.estado === 'EN CAMINO' && !esta[p.ref]);
+      }).map(function(p){ var c = Object.assign({}, p); if(c.precio0 != null){ c.precio = c.precio0; delete c.precio0; } return c; });
+    }
+    var todo = mantener.concat(nuevos);
+    var om = {}; PRODUCTS.slice().sort(function(a, b){ return (a.ord || 0) - (b.ord || 0); }).forEach(function(p){ if(!(p.marca in om)) om[p.marca] = Object.keys(om).length; });
+    todo.sort(function(a, b){
+      var ma = a.marca in om ? om[a.marca] : 9999, mb = b.marca in om ? om[b.marca] : 9999;
+      if(ma !== mb) return ma - mb;
+      var ea = a.estado === 'DISPONIBLE' ? 0 : 1, eb = b.estado === 'DISPONIBLE' ? 0 : 1;
+      if(ea !== eb) return ea - eb;
+      return (b.disp - a.disp) || (a.ref < b.ref ? -1 : 1);
+    });
+    todo.forEach(function(p, i){ p.ord = i; p.sku = i + 1; });
+    return { products: todo, dup: dup, sinPrecio: sinPrecio, fueraBodega: fueraBodega, nuevos: nuevos.length, mantenidos: mantener.length };
   }
 
   // ---------- regenerar el HTML de la página ----------
@@ -357,7 +392,8 @@
       var map = autoMap(headers);
       // aplicar mapeo guardado por nombre de columna
       Object.keys(saved).forEach(function(f){ var c = headers.findIndex(function(h){ return norm(h) === saved[f]; }); if(c >= 0) map[f] = c; });
-      st = { file: file, sheet: best.name, rows: rows, hdr: hdr, headers: headers, map: map };
+      var cg = /(^|[^A-Z])(PF|PRESTIGE)([^A-Z]|$)/i.test(file.name) ? 'PF' : (/(^|[^A-Z])(MM|MULTI)/i.test(file.name) ? 'MM' : '');
+      st = { file: file, sheet: best.name, rows: rows, hdr: hdr, headers: headers, map: map, cia: cg };
       renderMapping();
     }catch(e){
       $('ax-body').innerHTML = '';
@@ -371,13 +407,17 @@
     FIELDS.forEach(function(f){
       html += '<div>' + f[1] + (f[2] ? ' <span class="ax-req">*</span>' : '') + '</div><select data-f="' + f[0] + '">' + opts + '</select>';
     });
-    html += '</div><div id="ax-preview"></div>';
+    html += '</div>';
+    html += '<div class="ax-map" style="margin-top:10px"><div>Compañía del archivo <span class="ax-req">*</span></div><select id="ax-cia"><option value="">— elegir —</option><option value="PF">Prestige (PF)</option><option value="MM">Multimoda (MM)</option></select></div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:4px">Solo se usa si el archivo no trae columna CIA (el Excel del EBS es de una compañía). Lo de la otra compañía se queda como está.</div>';
+    html += '<div id="ax-preview"></div>';
     $('ax-body').innerHTML = html;
     document.querySelectorAll('#ax-body select').forEach(function(s){
       var f = s.getAttribute('data-f');
       if(st.map[f] !== undefined) s.value = String(st.map[f]);
       s.onchange = function(){ if(s.value === '') delete st.map[f]; else st.map[f] = parseInt(s.value, 10); renderPreview(); };
     });
+    var sc = $('ax-cia'); sc.value = st.cia || ''; sc.onchange = function(){ st.cia = sc.value; st.html = null; renderPreview(); };
     renderPreview();
   }
 
@@ -388,8 +428,13 @@
       msg('err', 'Falta indicar la columna de: <b>' + missing.join(', ') + '</b>.');
       return;
     }
-    var b = buildProducts(st.rows, st.hdr, st.map);
-    st.products = b.products; st.dup = b.dup;
+    if(st.map.cia === undefined && !st.cia){
+      $('ax-preview').innerHTML = '';
+      msg('err', 'Elige de qué compañía es el archivo (Prestige o Multimoda).');
+      return;
+    }
+    var b = buildProducts(st.rows, st.hdr, st.map, st.cia);
+    st.products = b.products; st.dup = b.dup; st.html = null;
     var P = b.products, units = P.reduce(function(a, p){ return a + p.disp; }, 0);
     var oldUnits = PRODUCTS.reduce(function(a, p){ return a + (p.disp || 0); }, 0);
     var conFoto = P.filter(function(p){ return p.url; }).length;
@@ -402,8 +447,11 @@
       P.slice(0, 6).map(function(p){ return '<tr><td>' + escT(p.ref) + '</td><td>' + escT(p.marca) + '</td><td>' + p.cia + '</td><td>' + fmt(p.disp) + '</td><td>$' + p.precio.toFixed(2) + '</td><td>' + escT(p.grupo) + '</td><td>' + escT(p.year) + '</td><td>' + escT(p.temp) + '</td><td>' + escT(p.estado) + '</td></tr>'; }).join('') +
       '</table></div>';
     var warns = [];
-    if(st.dup) warns.push(fmt(st.dup) + ' filas repetidas por referencia se sumaron en una sola.');
-    if(P.length < PRODUCTS.length * 0.5) warns.push('El archivo trae menos de la mitad de los productos de hoy. Revisa que sea el EBS completo antes de publicar.');
+    if(st.dup) warns.push(fmt(st.dup) + ' filas repetidas por referencia (lotes) se sumaron en una sola.');
+    if(b.fueraBodega) warns.push(fmt(b.fueraBodega) + ' filas de otras bodegas (dañado, cuarentena…) no se cuentan.');
+    if(b.sinPrecio) warns.push(fmt(b.sinPrecio) + ' productos sin precio conocido no se publican (cárgales precio en la lista 3 de SAP).');
+    if(st.map.cia === undefined) warns.push('Del archivo: ' + fmt(b.nuevos) + ' productos de ' + (st.cia === 'PF' ? 'Prestige' : 'Multimoda') + '. Se mantienen ' + fmt(b.mantenidos) + ' de la otra compañía y en camino.');
+    if(st.map.cia !== undefined && P.length < PRODUCTS.length * 0.5) warns.push('El archivo trae menos de la mitad de los productos de hoy. Revisa que sea el EBS completo antes de publicar.');
     if(st.map.foto === undefined) warns.push('No hay columna de foto: las fotos se buscarán por referencia.');
     html += '<div class="ax-row">' +
       '<button class="btn btn-primary" id="ax-pub">⬆ Publicar en la página</button>' +

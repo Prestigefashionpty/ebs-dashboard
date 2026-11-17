@@ -3,17 +3,16 @@
 Catálogo de inventario para clientes (pedidos, catálogos por marca y exportación a Excel).
 Todo vive en un solo archivo: `index.html`. Los datos van dentro del archivo.
 
-## Cómo se actualiza (cada lunes)
+## Cómo se actualiza
 
-1. Alex baja el Excel de inventario de **EBS Navigator**.
-2. Abre el dashboard publicado y toca el botón **Alex**, en la esquina inferior izquierda.
-3. Escribe la contraseña y arrastra el Excel.
-4. Revisa el resumen (productos, unidades, marcas) y toca **Publicar en la página**.
-5. En unos minutos (entre 1 y 10) el sitio queda actualizado para todos, con la fecha nueva en "Actualizado".
+**Automático, todos los días a las 5:30 am:** un robot (GitHub Actions en el repo privado `sap-mcp-attie`, tarea "Inventario EBS Dashboard")
+1. entra al EBS Navigator y baja *Inventory → Report (including batches)* de Prestige y Multimoda (disponible de la bodega Regular);
+2. toma de SAP el precio (lista 3 "1.Precio_Vta Wholesale"), año, temporada, color, foto y lo que viene en camino (compras abiertas);
+3. publica la página. Si algo falla, no publica y GitHub manda un correo.
 
-La página reconoce sola las columnas del Excel (Referencia, Descripción, Marca, CIA, Disponible, Precio, Grupo, Año, Temporada, Color, Estado, Foto). Si alguna no la reconoce, se elige una vez en la lista y queda guardada para la próxima.
+Productos sin precio en la lista 3 conservan el último precio publicado; los que no tienen ningún precio no salen y quedan en `reportes/sin_precio_lista3.csv`.
 
-En los catálogos que se descargan para clientes el botón Alex no aparece.
+**Manual (respaldo):** botón **⬆ Alex** → contraseña → arrastrar el Excel del EBS (uno por compañía). Toma precio y datos de lo publicado; lo de la otra compañía queda igual.
 
 ## Catálogo para clientes: link + pedido por WhatsApp
 
