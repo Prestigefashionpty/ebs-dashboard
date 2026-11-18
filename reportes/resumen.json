@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-11-18T09:10-05:00",
+  "productos": 25783,
+  "disponibles": 20294,
+  "en_camino": 5489,
+  "unidades": 1073514,
+  "marcas": 59,
+  "con_foto": 24789,
+  "productos_antes": 24909,
+  "sin_precio_lista3": 5010,
+  "sin_precio_por_origen": {
+    "sin precio": 1979,
+    "anterior": 3031
+  },
+  "no_publicados_sin_precio": 1979
+}
