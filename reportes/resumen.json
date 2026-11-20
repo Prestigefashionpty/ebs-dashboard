@@ -1,16 +1,16 @@
 {
-  "fecha": "2026-11-19T14:35-05:00",
-  "productos": 25716,
-  "disponibles": 20182,
-  "en_camino": 5534,
-  "unidades": 1061448,
+  "fecha": "2026-11-20T14:11-05:00",
+  "productos": 25757,
+  "disponibles": 20206,
+  "en_camino": 5551,
+  "unidades": 1058350,
   "marcas": 59,
-  "con_foto": 24722,
-  "productos_antes": 25783,
-  "sin_precio_lista3": 5010,
+  "con_foto": 24763,
+  "productos_antes": 25716,
+  "sin_precio_lista3": 5014,
   "sin_precio_por_origen": {
-    "sin precio": 2017,
+    "sin precio": 2021,
     "anterior": 2993
   },
-  "no_publicados_sin_precio": 2017
+  "no_publicados_sin_precio": 2021
 }
