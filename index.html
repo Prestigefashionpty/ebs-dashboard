@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>EBS Dashboard | Grupo Attie</title>
+<title>Catálogo Ventas | Grupo Attie</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html[data-theme="dark"]{
@@ -190,7 +190,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:4p
 <body>
 
 <nav>
-  <div class="nav-brand"><span>EBS</span><span class="nav-sep">·</span> Grupo Attie</div>
+  <div class="nav-brand"><span>Catálogo Ventas</span><span class="nav-sep">·</span> Grupo Attie</div>
   <span class="nav-badge">Interno</span>
   <span id="fecha-pub" class="nav-badge" style="background:#facc15;color:#111827;border:1px solid #eab308;margin-left:6px;font-weight:700">Actualizado: 23/11/2026</span>
   <div class="nav-right">
@@ -1129,7 +1129,7 @@ function exportXLSX(){
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Orden ${fecha}</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6fa;color:#1a1d2e;font-size:13px}.page{max-width:1100px;margin:0 auto;padding:24px}.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #2e3147}.logo{font-size:22px;font-weight:900;color:#1a1d2e}.logo span{color:#4f6ef7}.meta{text-align:right;font-size:12px;color:#6b728a;line-height:1.8}.client-band{background:#eef1ff;border:1px solid #c7d0f8;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;gap:30px;font-size:13px}.cl-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#6b728a;display:block;margin-bottom:2px}.cl-val{font-size:16px;font-weight:800;color:#1a1d2e}.summary{display:flex;gap:14px;margin-bottom:20px}.sum-box{background:#fff;border:1px solid #dde1f0;border-radius:10px;padding:12px 18px;flex:1;text-align:center}.sum-box .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#6b728a;margin-bottom:4px}.sum-box .val{font-size:20px;font-weight:800}.green{color:#16a34a}.blue{color:#4f6ef7}table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07)}thead{background:#1a1d27}thead th{color:#fff;padding:11px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}tbody tr{border-bottom:1px solid #eef0f8}tbody tr:nth-child(even){background:#f9faff}td{padding:10px 12px;vertical-align:middle}.num{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}.center{text-align:center}.img-cell{width:72px;padding:6px}.img-cell img{width:60px;height:60px;object-fit:contain;border-radius:6px;background:#f4f6fa;padding:4px;border:1px solid #eef0f8}.ref-cell{min-width:130px}.ref-cell b{font-family:monospace;font-size:12px;color:#2d3748}.marca-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#4f6ef7}.temp-tag{background:#eef0ff;color:#4f6ef7;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600}.qty-cell{font-size:15px;font-weight:800;background:#eef0ff}.total-cell{font-size:14px;font-weight:800;color:#16a34a}.footer{margin-top:20px;text-align:center;font-size:11px;color:#a0a8c0;padding-top:14px;border-top:1px solid #dde1f0}</style></head>
 <body><div class="page">
-  <div class="header"><div class="logo">EBS <span>·</span> Grupo Attie<div style="font-size:12px;font-weight:400;color:#6b728a;margin-top:2px">Orden de Compra</div></div><div class="meta"><b>${fecha}</b><br>Generado desde EBS Dashboard</div></div>
+  <div class="header"><div class="logo">Catálogo Ventas <span>·</span> Grupo Attie<div style="font-size:12px;font-weight:400;color:#6b728a;margin-top:2px">Orden de Compra</div></div><div class="meta"><b>${fecha}</b><br>Generado desde Catálogo Ventas</div></div>
   <div class="client-band"><div><span class="cl-lbl">Cliente</span><span class="cl-val">${cl}</span></div><div><span class="cl-lbl">Vendedor</span><span class="cl-val">${vd}</span></div></div>
   <div class="summary"><div class="sum-box"><div class="lbl">Productos</div><div class="val blue">${items.length}</div></div><div class="sum-box"><div class="lbl">Unidades</div><div class="val">${totalUds}</div></div><div class="sum-box"><div class="lbl">Total</div><div class="val green">$${totalVal.toFixed(2)}</div></div></div>
   <table><thead><tr><th>#</th><th>Foto</th><th>Referencia</th><th>Descripción</th><th>Grupo</th><th>Temporada</th><th>Precio</th><th>Cant.</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table>
