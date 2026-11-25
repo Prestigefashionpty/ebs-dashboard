@@ -1,7 +1,7 @@
 (function(){
   var PIC = 'https://tmpmulimph2.olk.topmanage.cloud/agent/pic.aspx';
   var SZ_CARD = 400, SZ_LIST = 160, SZ_MODAL = 900;   // tamaños de miniatura (px, lado mayor)
-  var CACHE_KEY = 'fotoCache_v1', CACHE_DAYS = 7;
+  var CACHE_KEY = 'fotoCache_v2', CACHE_DAYS = 7;
 
   // ---- utilidades de URL ----
   function ciaId(p){ return p.cia === 'MM' ? '4' : '5'; }            // MM = Multimoda (ID=4), PF = Prestige (ID=5)
