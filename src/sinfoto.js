@@ -69,6 +69,9 @@
   try { var raw = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); cache = raw.d || {}; } catch(e){}
   function saveCache(){ try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: cache })); } catch(e){} }
   var checked = {};   // revisados en esta visita (lo que no tenía foto se vuelve a revisar al recargar)
+  /* lo que el robot de la mañana ya revisó en el servidor (campo fo) se usa directo */
+  var robot = 0;
+  PRODUCTS.forEach(function(p){ if(typeof p.fo === 'string'){ cache[p.ref] = p.fo; checked[p.ref] = 1; robot++; } });
 
   function probe(c){
     return new Promise(function(ok){
@@ -182,6 +185,8 @@
     var d = new Date(); a.download = 'Sin foto ' + d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear() + '.csv';
     document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
   };
+
+  if(robot) PRODUCTS.forEach(function(p){ if(typeof p.fo === 'string') apply(p); });
 
   var _sf = window.setFoto;
   window.setFoto = function(m){

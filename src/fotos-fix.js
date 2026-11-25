@@ -42,6 +42,7 @@
 
   // ---- candidatos en orden de prioridad ----
   function candidates(p){
+    if(typeof p.fo === 'string' && p.fo) return [ parse(PIC + '?' + p.fo) ];   // el robot ya la encontró
     if(cache[p.ref] === '') return [];                              // ya se sabe que no hay foto
     if(cache[p.ref]) return [ parse(PIC + '?' + cache[p.ref]) ];
     var out = [], seen = {};
