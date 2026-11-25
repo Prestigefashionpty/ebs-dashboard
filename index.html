@@ -2720,7 +2720,7 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
   var PIC = 'https://tmpmulimph2.olk.topmanage.cloud/agent/pic.aspx';
   var CACHE_KEY = 'fotoCache_v1', SZ = 64, PAR = 12;
   var $ = function(id){ return document.getElementById(id); };
-  document.querySelectorAll('#sf-bar,#sf-css').forEach(function(e){ e.remove(); });
+  document.querySelectorAll('#sf-bar,#sf-css,#sf-side').forEach(function(e){ e.remove(); });
 
   var st = document.createElement('style'); st.id = 'sf-css';
   st.textContent =
@@ -2730,7 +2730,8 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
     '#sf-bar .sf-p{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}' +
     '#sf-bar .sf-p i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s;}' +
     '#sf-bar button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;white-space:nowrap;}' +
-    '#sf-bar button.sf-dl{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}';
+    '#sf-bar button.sf-dl{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}' +
+    '#sf-side{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;display:none;}#sf-side.on{display:block;}#sf-side b{color:var(--text);}#sf-side a{color:var(--accent);cursor:pointer;text-decoration:underline;}';
   document.head.appendChild(st);
 
   var bar = document.createElement('div'); bar.id = 'sf-bar';
@@ -2738,6 +2739,9 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
     '<button type="button" class="sf-dl" hidden>⬇ Lista sin foto (Excel)</button><button type="button" class="sf-x">Cancelar</button>';
   var cont = $('products-container');
   if(cont && cont.parentNode) cont.parentNode.insertBefore(bar, cont);
+  var side = document.createElement('div'); side.id = 'sf-side';
+  var fb = $('foto-btns'); if(fb && fb.parentNode) fb.parentNode.insertBefore(side, fb.nextSibling);
+  function marcar(m){ document.querySelectorAll('.foto-b').forEach(function(b){ b.classList.toggle('active', b.dataset.m === m); }); }
 
   /* ---- misma lógica de alternativas que fotos-fix ---- */
   function parse(u){
@@ -2801,19 +2805,19 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
   }
 
   var running = null, lastSin = [];
-  function msg(t, pct){ bar.querySelector('.sf-msg').innerHTML = t; bar.querySelector('.sf-p').style.display = pct == null ? 'none' : ''; if(pct != null) bar.querySelector('.sf-p i').style.width = pct + '%'; }
+  function msg(t, pct){ side.innerHTML = t + (pct == null && !bar.querySelector('.sf-dl').hidden ? '' : ''); side.classList.add('on'); bar.querySelector('.sf-msg').innerHTML = t; bar.querySelector('.sf-p').style.display = pct == null ? 'none' : ''; if(pct != null) bar.querySelector('.sf-p i').style.width = pct + '%'; }
 
   async function revisar(mode){
     if(running) running.cancel = true;
     var job = running = { cancel: false };
-    fotoMode = 'all'; applyFilters();
+    fotoMode = 'all'; applyFilters(); marcar(mode);
     var set = filtered.slice();
     var pend = set.filter(function(p){ return !checked[p.ref] && !(cache[p.ref]); });
     set.forEach(function(p){ if(cache[p.ref]) { checked[p.ref] = 1; apply(p); } });
     bar.classList.add('on'); bar.querySelector('.sf-dl').hidden = true;
     bar.querySelector('.sf-x').hidden = false; bar.querySelector('.sf-x').textContent = 'Cancelar';
     var n = 0, total = pend.length, sinConexion = 0;
-    if(total) msg('Revisando fotos en el servidor… 0 de ' + total.toLocaleString('en-US'), 0);
+    msg(total ? 'Revisando fotos en el servidor… 0 de ' + total.toLocaleString('en-US') : 'Revisando…', 0);
     var idx = 0;
     async function worker(){
       while(idx < pend.length && !job.cancel){
@@ -2829,8 +2833,7 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
     saveCache();
     if(job.cancel) return;
     running = null;
-    fotoMode = mode;
-    document.querySelectorAll('.foto-b').forEach(function(b){ b.classList.toggle('active', b.dataset.m === mode); });
+    fotoMode = mode; marcar(mode);
     applyFilters();
     resumen(mode, set, sinConexion);
   }
@@ -2842,16 +2845,15 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
     msg(t, null);
     bar.classList.add('on');
     bar.querySelector('.sf-dl').hidden = !(mode === 'sin' && sin.length);
+    if(mode === 'sin' && sin.length){ side.innerHTML = t + ' · <a>⬇ Bajar lista</a>'; side.querySelector('a').onclick = function(){ bar.querySelector('.sf-dl').click(); }; }
     bar.querySelector('.sf-x').hidden = false;
     bar.querySelector('.sf-x').textContent = 'Cerrar';
   }
 
   bar.querySelector('.sf-x').onclick = function(){
     if(running){ running.cancel = true; running = null; saveCache(); }
-    bar.classList.remove('on');
-    if(fotoMode === 'all') return;
-    fotoMode = 'all';
-    document.querySelectorAll('.foto-b').forEach(function(b){ b.classList.toggle('active', b.dataset.m === 'all'); });
+    bar.classList.remove('on'); side.classList.remove('on');
+    fotoMode = 'all'; marcar('all');
     applyFilters();
   };
   bar.querySelector('.sf-dl').onclick = function(){
@@ -2871,7 +2873,7 @@ function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
   window.setFoto = function(m){
     if(m === 'sin' || m === 'con'){ revisar(m); return; }
     if(running){ running.cancel = true; running = null; saveCache(); }
-    bar.classList.remove('on');
+    bar.classList.remove('on'); side.classList.remove('on');
     return _sf.apply(this, arguments);
   };
 
